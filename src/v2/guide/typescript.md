@@ -218,3 +218,126 @@ const Component = Vue.extend({
 })
 ```
 If you find validator not getting type inference or member completion isn't working, annotating the argument with the expected type may help address these problems.
+
+
+
+## Annotating `$refs`
+
+The type of [$refs](../api#refs) cannot be inferred automatically, as they can refer both to `HTMLElement`s and child components. To solve this, you can add a type assertion.
+
+Either inline:
+
+```ts
+const Component = Vue.extend({
+  mounted(): void {
+    (this.$refs.checkbox as HTMLInputElement).indeterminate = true
+  }
+})
+```
+
+Or on the `Vue` object:
+
+```ts
+import Vue, { VueConstructor } from 'vue'
+
+import MyChildComponent from './MyChildComponent.vue'
+
+interface Refs {
+  $refs: {
+    checkbox: HTMLInputElement;
+    child: InstanceType<typeof MyChildComponent>;
+  }
+}
+
+const Component = (Vue as VueConstructor<
+  Vue & Refs
+>).extend({
+  mounted(): void {
+    this.$refs.checkbox.indeterminate = child.indeterminateState
+  }
+})
+```
+
+
+
+## Annotating Mixins
+
+Likewise, TypeScript cannot automatically infer the types of properties and methods provided by [mixins](./Mixins).
+
+To solve this, you can add a type assertion on the `Vue` object:
+
+```ts
+import Vue, { VueConstructor } from 'vue'
+
+import MyMixin from './MyMixin.vue'
+
+const Component = (Vue as VueConstructor<
+  Vue & InstanceType<typeof MyMixin>
+>).extend({
+  mixins [MyMixin],
+  computed: {
+    message(): string {
+      return this.methodProvidedByMixin("hello")
+    }
+  }
+})
+```
+
+This also works for multiple mixins:
+
+```ts
+const Component = (Vue as VueConstructor<
+  Vue & InstanceType<typeof MixinA> & InstanceType<typeof MixinB>
+>).extend({
+  // ...
+})
+```
+
+
+
+## Wrapped methods
+
+TypeScript cannot infer the type of `this` in the body of wrapped methods:
+
+```ts
+import Vue from "vue"
+import { debounce } from "lodash"
+
+const Component = Vue.extend({
+  methods: {
+    update: debounce(() => {
+      this.$emit('input', this.value)
+    }, 1000)
+  }
+})
+```
+
+However, you can define the method as is and wrap it in the `created()` hook:
+
+```ts
+import Vue from "vue"
+import { debounce } from "lodash"
+
+const Component = Vue.extend({
+  created() {
+    this.update = debounce(this.update, 1000)
+  }
+  methods: {
+    update() {
+      this.$emit('input', this.value)
+    }
+  }
+})
+```
+
+> If you want to wrap a `computed` setter or a `watch` handler, you will have to extract a `method` and apply this pattern to that method.
+
+
+
+## Limitations
+
+Please note the following limitations when migrating a Vue project to TypeScript:
+
+- You cannot use TypeScript inside the `<template>…</template>` section.
+- When importing Single File Components, you have to include the `.vue` file extension in the import declaration.
+- Components defined with `Vue.extend` always have the name `"VueComponent"`. This might cause "duplicate key" issues when using `component.name` in the [`key` special attribute](../api/#key).

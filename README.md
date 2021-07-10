@@ -120,6 +120,13 @@ Bahasa Indonesia translation is maintained by [Vue.js Indonesia](https://github.
 
 * Translation Repo: [/vuejs-id/docs](https://github.com/vuejs-id/docs)
 
+### Polski
+
+Polish translation is maintained by [Vuejs-pl](https://github.com/vuejs-pl/pl.vuejs.org).
+
+* Translation Repo - [/vuejs-pl/pl.vuejs.org](https://github.com/vuejs-pl/pl.vuejs.org)
+* Primary maintainer - [Jakub Grzywacz (jakex7)](https://github.com/jakex7)
+
 ### Want to help with the translation?
 
 If you feel okay with translating quite alone, you can fork the repo, post a comment on the [Community Translation Announcements](https://github.com/vuejs/vuejs.org/issues/2015) issue page to inform others that you're doing the translation and go for it.
